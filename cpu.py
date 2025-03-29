@@ -1,23 +1,40 @@
 class MinimalCPU:
-    def __init__(self, instructions=None):
-        self.instructions = instructions if instructions is not None else []
-        self.data_memory = {}
+    def __init__(self, name, instructions):
+        self.name = name
+        self.instructions = instructions
         self.pc = 0
 
-    def execute_instruction(self, instruction):
-        if instruction == "NOP":
-            print(f"Executing NOP at PC = {self.pc}")
-        else:
-            print(f"Unbekannte Instruktion '{instruction}' bei PC = {self.pc}")
+    def step(self):
+        if self.pc >= len(self.instructions):
+            self.pc = 0
 
-    def run(self):
-        while self.pc < len(self.instructions):
-            current_instruction = self.instructions[self.pc]
-            self.execute_instruction(current_instruction)
+        instructions = self.instructions[self.pc]
+        if instructions == "NOP":
+            print(f"{self.name}: Executing NOP at PC = {self.pc}")
             self.pc += 1
+            return False
+        elif instructions == "JMP":
+            print(f"{self.name}: Executing JMP at PC = {self.pc} - switching context")
+            self.pc = 0
+            return True
+        else:
+            print(f"{self.name}: Unknown instruction '{instructions}' at PC = {self.pc}")
+            self.pc += 1
+            return False
 
+def run_cpus(cpu1, cpu2):
+    current_cpu = cpu1
+    other_cpu = cpu2
+
+    while True:
+        context_switch = current_cpu.step()
+        if context_switch:
+            current_cpu, other_cpu = other_cpu, current_cpu
 
 if __name__ == "__main__":
-    program = ["NOP", "NOP", "NOP"]
-    cpu = MinimalCPU(instructions=program)
-    cpu.run()
+    program = ["NOP", "NOP", "JMP"]
+
+    cpu1 = MinimalCPU("CPU1", program)
+    cpu2 = MinimalCPU("CPU2", program)
+
+    run_cpus(cpu1, cpu2)
